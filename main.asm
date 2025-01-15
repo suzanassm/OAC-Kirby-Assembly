@@ -4,9 +4,10 @@
 	.include "Map-One-Vegetable-Valley.s"
 	.include "Kirby.s"
 	.include "estrela.s"
+	.include "sky.s"
 	 map_x:     .word 0			# guarda o deslocamento horizontal do mapa
-	CHAR_POS:   .half 0,0
-	OLD_CHAR:   .half 0,0     #x,y
+	CHAR_POS:   .half 120,160
+	OLD_CHAR_POS:   .half 120,160    #x,y
 .text
 
 SETUP:	
@@ -42,11 +43,11 @@ GAME_LOOP:
 	call Print
 	
 	la t0,CHAR_POS			# carrega em t0 o endereco de CHAR_POS
-	la a0,char			# carrega o endereco do sprite 'char' em a0
+	la a0,Kirby			# carrega o endereco do sprite 'char' em a0
 	lh a1,0(t0)			# carrega a posicao x do personagem em a1
 	lh a2,2(t0)			# carrega a posicao y do personagem em a2
 	mv a3,s0			# carrega o valor do frame em a3
-	call PRINT			# imprime o sprite
+	call Print			# imprime o sprite
 		
 	li t0,0xFF200604		# carrega em t0 o endereco de troca de frame
 	sw s0,0(t0)			# mostra o sprite pronto para o usuario
@@ -56,13 +57,13 @@ GAME_LOOP:
 	#####################################
 	la t0,OLD_CHAR_POS		# carrega em t0 o endereco de OLD_CHAR_POS
 		
-	la a0,tile			# carrega o endereco do sprite 'tile' em a0
+	la a0,sky			# carrega o endereco do sprite 'tile' em a0
 	lh a1,0(t0)			# carrega a posicao x antiga do personagem em a1
 	lh a2,2(t0)			# carrega a posicao y antiga do personagem em a2
 		
 	mv a3,s0			# carrega o frame atual (que esta na tela em a3)
 	xori a3,a3,1			# inverte a3 (0 vira 1, 1 vira 0)
-	call PRINT			# imprime
+	call Print			# imprime
 
 	j GAME_LOOP
 KEY2:		
