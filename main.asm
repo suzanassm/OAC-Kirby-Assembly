@@ -5,9 +5,11 @@
 	.include "Kirby.s"
 	.include "estrela.s"
 	.include "sky.s"
+	
 	 map_x:     .word 0			# guarda o deslocamento horizontal do mapa
-	CHAR_POS:   .half 120,140
-	OLD_CHAR_POS:   .half 120,140   #x,y
+	CHAR_POS:   .half 140,140
+	OLD_CHAR_POS:   .half 140,140   #x,y
+	flag:		.byte 0
 .text
 
 SETUP:	#setup mapa
@@ -22,18 +24,22 @@ SETUP:	#setup mapa
 
 	
 	
-GAME_LOOP:	
+GAME_LOOP:
+	#Processos de movimento	
 	call KEY2
-	li t0,0xFF200604		# carrega em t0 o endereco de troca de frame
-	sw s0,0(t0)			# mostra o sprite pronto para o usuario
-	
-	mv a3,s0			# carrega o frame atual (que esta na tela em a3)
-	xori a3,a3,1			# inverte a3 (0 vira 1, 1 vira 0)
-	
+	#SO RENDERIZACAO A PARTIR DAQUI:
+	#mv a3,s0			# carrega o frame atual (que esta na tela em a3)
+	#xori a3,a3,1			# inverte a3 (0 vira 1, 1 vira 0)
+	la a0, MapOneVegetableValley	# label do mapa a ser impress
+	li a1, 0			# Define a posição X no BITMAP onde o mapa começa a ser printado 
+	li a2, 30			# Define a posição Y no BITMAP onde o mapa começa a ser printado 
+	mv a3, s0 			# Define o frame
+	la t0, map_x			
+	lw a4 0(t0)			# carrega a posiçao X do MAPA
 	call Print
 	
 
-	xori s0, s0, 1
+	#xori s0, s0, 1
 	
 	la t0,CHAR_POS			# carrega em t0 o endereco de CHAR_POS
 	la a0,Kirby			# carrega o endereco do sprite 'char' em a0
@@ -46,30 +52,16 @@ GAME_LOOP:
 	li t0,0xFF200604		# carrega em t0 o endereco de troca de frame
 	sw s0,0(t0)			# mostra o sprite pronto para o usuario
 		
-	#####################################
-	# Limpeza do "rastro" do personagem #
-	#####################################
-	la t0,OLD_CHAR_POS		# carrega em t0 o endereco de OLD_CHAR_POS
+	
+	mv zero,a0
+	la a0,flag 			# vai ler a flag e colocar as informacoes no a0
+	li t0,1				# t0 recebe 1
+	lb t1, 0(a0)			# t1 recebe as informcoes do a0
 		
-	la a0,sky			# carrega o endereco do sprite 'sky' em a0
-	lh a1,0(t0)			# carrega a posicao x antiga do personagem em a1
-	lh a2,2(t0)			# carrega a posicao y antiga do personagem em a2
-		
-	mv a3,s0			# carrega o frame atual (que esta na tela em a3)
-	xori a3,a3,1			# inverte a3 (0 vira 1, 1 vira 0)
-	call Print			# imprime
-
-	#xori s0, s0, 1
+	beq t1,t0,SETUP2		# se a flag for VERDADEIRA, ou seja, ele chegou na porta e esta com a chave, o código vai fechar
 	
 	
-	la t0, map_x
-	la a0, MapOneVegetableValley	# label do mapa a ser impress
-	li a1, 0			# Define a posição X no BITMAP onde o mapa começa a ser printado 
-	li a2, 30			# Define a posição Y no BITMAP onde o mapa começa a ser printado 
-	mv a3, s0			# Define o frame
-	lw a4, 0(t0)
-	
-	call Print
+	xori s0,s0,1
 	
 	
 	
@@ -126,10 +118,11 @@ CHAR_BAIXO:    la t0,CHAR_POS			# carrega em t0 o endereco de CHAR_POS
 		
 		la t0,CHAR_POS
 		lh t1,2(t0)			# carrega o y atual do personagem
-		addi t1,t1,-16			# decrementa 16 pixeis
+		addi t1,t1,16			# decrementa 16 pixeis
 		sh t1,2(t0)			# salva
 		ret
-
+SETUP2:
+  ret
 .include "Print.s"
 .include "SYSTEMv24.s"
 
