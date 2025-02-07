@@ -1,11 +1,15 @@
 .include "MACROSv24.s"
+.include "render.s"
+
 
 .data 
-	.include "Map-One-Vegetable-Valley.s"
+	.include "tiles.s"
+	.include "matriz_mapa1.s"
 	.include "Kirby.s"
-	.include "estrela.s"
-	.include "sky.s"
 	
+	
+	
+	framebuffer: 0xFF000000
 	 map_x:     .word 0			# guarda o deslocamento horizontal do mapa
 	CHAR_POS:   .half 140,140
 	OLD_CHAR_POS:   .half 140,140   #x,y
@@ -13,17 +17,20 @@
 .text
 
 SETUP:	#setup mapa
-	la a0, MapOneVegetableValley	# label do mapa a ser impress
-	li a1, 0			# Define a posição X no BITMAP onde o mapa começa a ser printado 
-	li a2, 30			# Define a posição Y no BITMAP onde o mapa começa a ser printado 
-	li a3,0 			# Define o frame
-	la t0, map_x			
-	lw a4 0(t0)			# carrega a posiçao X do MAPA
-	jal Print
-	
+	# Load matrix address (defines the map layout)
+	la a0,matriz_mapa1			# a0 = address of the matrix
+	# Load tiles address (contains tile data)
+	la a1, tiles			# a1 = address of the tiles
+	# Load framebuffer address
+	la a2, framebuffer
+	lw a2, 0(a2)			# a2 = framebuffer base address
 
-	
-	
+	# Define starting position (X, Y) for the map
+	li a3, 0			# a3 = starting X position (in pixels)
+	li a4, 30			# a4 = starting Y position (in pixels)
+
+	# Call the PrintMap function to render the map
+	jal PrintMap
 GAME_LOOP:
 	#Processos de movimento	
 	call KEY2
