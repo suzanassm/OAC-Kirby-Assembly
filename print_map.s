@@ -1,42 +1,55 @@
-print_map: 
-# Coloca em t0 o ENDERECO INICIAL DO BITMAP  de acordo com o FRAME a3
-	#t0 = endereÃ§o bitmap; a3 = frame
-	li t0, 0xFF0 # carrega 0xFF0 em t0
-	add t0, t0, a3 # adiciona o frame a FF0
-	slli t0, t0, 20 # shift de 20 bits pra esquerda
-	
-# carrega a posição inicial (x,y) onde a imagem começa a ser printada no bitmap
-# posição inicial = t0(inicial) + x + 320*y
-	add t0, t0, a1 # adiciona x ao t0
-	li t1, 320 # t1 = 320
-	mul t1, t1, a2 # multiplica y por t1
-	add t0, t0, t1 # coloca o endereco em t0	
+# colunas a serem printadas = 320  = 20 quadrados da matriz
+# linhas a serem printadas = 192 = 12 quadrados da matrtiz
+#s10 = contador de coluna
+#s11 = contador de linha  
 
-# 
-	mv t6, a0 # data em t6 para nao mudar a0
-	lw t3,0(t6)
-	lw t4, 4(t6)
-	addi t6, t6, 8 # primeira cor em t6 
-	mv t1, a4
-	add t6, t6, t1
-	mv t1, zero # zera t1
-	mv t2, zero # zera t2
-	  
-PrintLinha:
- 	#printando o bit t6 da imagem, no endereÃ§o t5 do bitmap
-	lbu t5, 0(t6) # carrega em t5 um byte da imagem
-	sb t5, 0(t0) # imprime no bitmap o byte da imagem
+# t0 -> deslocamento x do mapa
+# a0 -> ende3reço com conjuntos de tiles 
+# a1 -> matriz a serprintada
+ 
+print_mapa:
+# calcula primeiro tile a ser printaddo
+	li t1, 16	# tamanho de cada tile representada na matriz
+	lh t0, 0(t0)
+	div t1, t0, t1  
+	add a1, a1, t1
+	mv a5, a1
+	mv s10, zero
+	mv s11, zero
 	
-	addi t0, t0, 1 # incrementa endereco do bitmap
-	addi t6, t6, 1 # incrementa endereco da imagem
-	addi t2, t2, 1 # incrementa contador de coluna
+PrintTileMap:
+	# a0 -> tiles
+	li t0, 16
+	mul t1, t0, s10
+	mv a1, t1
+	mul t1, t0, s11
+	mv a2, t1
+	lb a4, 0(a5)
 	
-	blt t2, t3, PrintLinha # cont da coluna < largura ?
-	addi t0, t0, 320 # t0 += largura do bitmap
-	sub t0, t0, t3 # t0-= largura da imagem
-	 
-	mv t2, zero # zera t2 (cont de coluna)
-	addi t1, t1, 1 # incrementa contador de linha
-	 
-	bgt t4, t1, PrintLinha # altura > contador de linha ?
-	ret # retorna
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
+	call print_tile
+	
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	
+	addi s10, s10, 1
+	li t0, 20
+	addi a5, a5, 1
+	blt s10, t0, PrintTileMap
+	
+	addi s11, s11, 1
+	mv s10, zero
+	
+	addi a5, a5, 50
+	
+	li t0, 12
+	blt s11, t0, PrintTileMap
+	ret
+	
+																
+	
+	
+	
+	
